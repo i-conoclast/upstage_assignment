@@ -57,4 +57,5 @@ TRAIN_FILE = "../data/train_data.csv"
 VALID_FILE = "../data/valid_data.csv"
 TEST_FILE = "../data/test_data.csv"
 
-OUTPUT_DIR = "../models"
+MODEL_DIR = "../models"
+OUTPUT_DIR = "../outputs"
