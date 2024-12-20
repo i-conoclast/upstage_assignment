@@ -44,7 +44,6 @@ class RelationDataset(Dataset):
                                   truncation=True, 
                                   padding="max_length", 
                                   max_length=self.max_length,
-                                  padding="max_length",
                                   return_tensors="pt")
         
         input_ids = encoding["input_ids"].squeeze(0)
