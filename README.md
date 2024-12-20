@@ -83,7 +83,7 @@
         name = "upstage-assignment"
         version = "0.1.0"
         description = ""
-        authors = ["Your Name <you@example.com>"]
+        authors = ["sora kim <icon_o_clast@naver.com>"]
         readme = "README.md"
 
         [tool.poetry.dependencies]
@@ -98,6 +98,9 @@
         matplotlib = "^3.10.0"
         seaborn = "^0.13.2"
 
+
+        [tool.poetry.group.dev.dependencies]
+        ipykernel = "^6.29.5"
 
         [build-system]
         requires = ["poetry-core"]
