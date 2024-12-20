@@ -111,9 +111,9 @@ def main(args):
 
 
         model_base_name = f"best_model_{datetime.now().strftime('%Y%m%d')}"
-        model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name)])
+        model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name) and f.endswith(".pth")])
         model_name = f"{model_base_name}_{model_num+1}"
-        
+
         if micro_f1 > best_f1:
             best_f1 = micro_f1
             if args.save_model:
