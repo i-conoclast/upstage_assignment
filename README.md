@@ -95,6 +95,8 @@
         transformers = "^4.47.1"
         scikit-learn = "^1.6.0"
         numpy = "^2.2.0"
+        matplotlib = "^3.10.0"
+        seaborn = "^0.13.2"
 
 
         [build-system]
