@@ -12,7 +12,7 @@ from loss import FocalLoss
 from metrics import compute_micro_f1, compute_auprc
 from config import (NUM_EPOCHS, LEARNING_RATE, BATCH_SIZE, NUM_LABELS, 
                     MODEL_NAME_OR_PATH, MAX_LENGTH, LABEL_SMOOTHING, ALPHA, GAMMA,
-                    LABEL2ID_PATH, ID2LABEL_PATH, TRAIN_FILE, VALID_FILE, TEST_FILE, OUTPUT_DIR, DROPOUT)
+                    LABEL2ID_PATH, ID2LABEL_PATH, TRAIN_FILE, VALID_FILE, MODEL_DIR, DROPOUT)
 
 import argparse
 from tqdm import tqdm
@@ -30,13 +30,6 @@ def main(args):
     
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False)
-
-    test_loader = None
-    if args.inference:
-        test_dataset = RelationDataset(args.test_file, args.model_name_or_path, args.max_length, label2id, 
-                                    use_entity_markers=args.use_entity_markers, use_entity_types=args.use_entity_types,
-                                    use_span_pooling=args.use_span_pooling, inference=True)
-        test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
     model = RelationClassifier(args.model_name_or_path, num_labels, args.dropout, 
                                len(train_dataset.tokenizer), args.use_span_pooling)
@@ -67,17 +60,10 @@ def main(args):
 
         for batch in tqdm(train_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
-            input_ids = batch["input_ids"]
-            attention_mask = batch["attention_mask"]
-            e1_start_idx = batch["e1_start_idx"]
-            e1_end_idx = batch["e1_end_idx"]
-            e2_start_idx = batch["e2_start_idx"]
-            e2_end_idx = batch["e2_end_idx"]
-            labels = batch["labels"]
 
             optimizer.zero_grad()
-            logits = model(input_ids, attention_mask, e1_start_idx, e1_end_idx, e2_start_idx, e2_end_idx)
-            train_loss_val = loss_fn(logits, labels)
+            logits = model(**batch)
+            train_loss_val = loss_fn(logits, batch["labels"])
             train_loss_val.backward()
             optimizer.step()
             scheduler.step()
@@ -92,19 +78,12 @@ def main(args):
         all_probs = []
         for batch in tqdm(valid_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
-            input_ids = batch["input_ids"]
-            attention_mask = batch["attention_mask"]
-            e1_start_idx = batch["e1_start_idx"]
-            e1_end_idx = batch["e1_end_idx"]
-            e2_start_idx = batch["e2_start_idx"]
-            e2_end_idx = batch["e2_end_idx"]
-            
-            logits = model(input_ids, attention_mask, e1_start_idx, e1_end_idx, e2_start_idx, e2_end_idx)
+            logits = model(**batch)
             probs = torch.softmax(logits, dim=1)
             preds = torch.argmax(probs, dim=1)
 
             all_preds.extend(preds.cpu().numpy().tolist())
-            all_labels.extend(labels.cpu().numpy().tolist())
+            all_labels.extend(batch["labels"].cpu().numpy().tolist())
             all_probs.extend(probs.cpu().numpy().tolist())
 
 
@@ -131,10 +110,9 @@ if __name__ == "__main__":
     parser.add_argument("--model_name_or_path", type=str, default=MODEL_NAME_OR_PATH)
     parser.add_argument("--train_file", type=str, default=TRAIN_FILE)
     parser.add_argument("--valid_file", type=str, default=VALID_FILE)
-    parser.add_argument("--test_file", type=str, default=TEST_FILE)
     parser.add_argument("--label2id_path", type=str, default=LABEL2ID_PATH)
     parser.add_argument("--id2label_path", type=str, default=ID2LABEL_PATH)
-    parser.add_argument("--output_dir", type=str, default=OUTPUT_DIR)
+    parser.add_argument("--output_dir", type=str, default=MODEL_DIR)
     parser.add_argument("--batch_size", type=int, default=BATCH_SIZE)
     parser.add_argument("--num_epochs", type=int, default=NUM_EPOCHS)
     parser.add_argument("--learning_rate", type=float, default=LEARNING_RATE)
@@ -148,7 +126,6 @@ if __name__ == "__main__":
     parser.add_argument("--use_span_pooling", action="store_true")
     parser.add_argument("--use_entity_markers", action="store_true")
     parser.add_argument("--use_entity_types", action="store_true")
-    parser.add_argument("--inference", action="store_true")
     parser.add_argument("--use_cuda", action="store_true")
     parser.add_argument("--save_model", action="store_true")
     args = parser.parse_args()
