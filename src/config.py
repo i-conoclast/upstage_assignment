@@ -49,3 +49,10 @@ MAX_LENGTH = 128
 LABEL_SMOOTHING = 0.09
 ALPHA = 1.0
 GAMMA = 2.0
+
+LABEL2ID_PATH = "utils/dict_label_to_num.pkl"
+ID2LABEL_PATH = "utils/dict_num_to_label.pkl"
+
+TRAIN_FILE = "data/train_data.csv"
+VALID_FILE = "data/valid_data.csv"
+TEST_FILE = "data/test_data.csv"
