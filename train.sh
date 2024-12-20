@@ -5,7 +5,7 @@ python src/train.py \
     --label2id_path tools/dict_label_to_num.pkl \
     --id2label_path tools/dict_num_to_label.pkl \
     --output_dir models \
-    --num_epochs 1 \
+    --num_epochs 10 \
     --save_model \
     --focal_loss \
     --label_smoothing 0.09 \
