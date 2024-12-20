@@ -49,7 +49,7 @@ def main(args):
     best_f1 = 0.0
     best_auprc = 0.0
 
-    device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() and args.use_cuda else "cpu")
     if not torch.backends.mps.is_available():
         if not torch.backends.mps.is_built():
             print("MPS not available because the current PyTorch install was not "
