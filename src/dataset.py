@@ -24,8 +24,8 @@ class RelationDataset(Dataset):
         self.data["subject_entity"] = self.data["subject_entity"].apply(ast.literal_eval)
         self.data["object_entity"] = self.data["object_entity"].apply(ast.literal_eval)
         if self.use_span_pooling:
-            self.tokenizer.add_tokens([E1_MARKER, E1_MARKER_CLOSE, E2_MARKER, E2_MARKER_CLOSE])
-
+            self.tokenizer.add_tokens([E1_MARKER_PREFIX, E1_MARKER_CLOSE_PREFIX, E2_MARKER_PREFIX, E2_MARKER_CLOSE_PREFIX])
+    
     def __len__(self) -> int:
         return len(self.data)
     
@@ -49,8 +49,8 @@ class RelationDataset(Dataset):
         input_ids = encoding["input_ids"].squeeze(0)
         attention_mask = encoding["attention_mask"].squeeze(0)
 
-        e1_start_idx, e1_end_idx = None, None
-        e2_start_idx, e2_end_idx = None, None
+        e1_start_idx, e1_end_idx = 0, 0
+        e2_start_idx, e2_end_idx = 0, 0
         if self.use_span_pooling:
             tokens = self.tokenizer.convert_ids_to_tokens(input_ids)
             e1_start_idx, e1_end_idx = self.find_span(tokens, E1_MARKER_PREFIX, E1_MARKER_CLOSE_PREFIX)
@@ -129,7 +129,7 @@ class RelationDataset(Dataset):
         if open_idx is not None and close_idx is not None and open_idx < close_idx:
             return open_idx+1, close_idx-1
         else:
-            return None, None
+            return 0, 0
         
 
 
