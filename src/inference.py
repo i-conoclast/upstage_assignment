@@ -39,6 +39,7 @@ def main(args):
     with torch.no_grad():
         for batch in tqdm(test_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
+            batch.pop("id")
             
             logits = model(**batch)
             probs = torch.softmax(logits, dim=1)
