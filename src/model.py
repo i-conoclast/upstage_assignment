@@ -19,37 +19,42 @@ class RelationClassifier(nn.Module):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
         hidden_states = outputs.last_hidden_state
 
-        # span pooling
-        # E1 pooling
-        e1_pooled = []
-        for i, hs in enumerate(hidden_states):
-            start = e1_start_idx[i].item()
-            end = e1_end_idx[i].item()
-            # to handle case where area is not correct
-            if end >= start:
-                span_vec = hs[start:end+1].mean(dim=0)
-            else:
-                # fallback: CLS or avg but here use CLS
-                span_vec = hs[0]
-            e1_pooled.append(span_vec)
-        e1_pooled = torch.stack(e1_pooled, dim=0)
+        if self.use_span_pooling:
+            # span pooling
+            # E1 pooling
+            e1_pooled = []
+            for i, hs in enumerate(hidden_states):
+                start = e1_start_idx[i].item()
+                end = e1_end_idx[i].item()
+                # to handle case where area is not correct
+                if end >= start:
+                    span_vec = hs[start:end+1].mean(dim=0)
+                else:
+                    # fallback: CLS or avg but here use CLS
+                    span_vec = hs[0]
+                e1_pooled.append(span_vec)
+            e1_pooled = torch.stack(e1_pooled, dim=0)
 
-        # E2 pooling
-        e2_pooled = []
-        for i, hs in enumerate(hidden_states):
-            start = e2_start_idx[i].item()
-            end = e2_end_idx[i].item()
-            # to handle case where area is not correct
-            if end >= start:
-                span_vec = hs[start:end+1].mean(dim=0)
-            else:
-                # fallback: CLS or avg but here use CLS
-                span_vec = hs[0]
-            e2_pooled.append(span_vec)
-        e2_pooled = torch.stack(e2_pooled, dim=0)
+            # E2 pooling
+            e2_pooled = []
+            for i, hs in enumerate(hidden_states):
+                start = e2_start_idx[i].item()
+                end = e2_end_idx[i].item()
+                # to handle case where area is not correct
+                if end >= start:
+                    span_vec = hs[start:end+1].mean(dim=0)
+                else:
+                    # fallback: CLS or avg but here use CLS
+                    span_vec = hs[0]
+                e2_pooled.append(span_vec)
+            e2_pooled = torch.stack(e2_pooled, dim=0)
 
-        # concat
-        concat_vec = torch.cat([e1_pooled, e2_pooled], dim=-1)
-        concat_vec = self.dropout(concat_vec)
-        logits = self.classifier(concat_vec)
+            # concat
+            concat_vec = torch.cat([e1_pooled, e2_pooled], dim=-1)
+            concat_vec = self.dropout(concat_vec)
+            logits = self.classifier(concat_vec)
+        else:
+            cls_output = outputs.last_hidden_state[:, 0, :]
+            cls_output = self.dropout(cls_output)
+            logits = self.classifier(cls_output)
         return logits
