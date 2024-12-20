@@ -9,6 +9,44 @@
 
 **Environment Settings**
 
+- 파이썬 버전 관리 도구로 `pyenv` 사용 (.python-version 파일 참고)
+- 의존성 관리 도구로 `Poetry` 사용
+- 상세 내용은 Usage Instructions - 2) Environment Setup 참고
+
+** Code Structure **
+
+```
+📦 upstage_assignment
+├─ data
+│  ├─ train.csv (원본)
+│  ├─ train_data.csv
+│  ├─ valid_data.csv
+│  └─ test_data.csv
+├─ models
+├─ notebooks
+│  └─ plots
+├─ outputs
+├─ src
+│  ├─ tools
+│  │  ├─ __init__.py
+│  │  ├─ dict_label_to_num.pkl
+│  │  ├─ dict_num_to_label.pkl
+│  │  └─ utils.py
+│  ├─ config.py
+│  ├─ dataset.py
+│  ├─ inference.py
+│  ├─ loss.py
+│  ├─ metrics.py
+│  ├─ model.py
+│  └─ train.py
+├─ train.sh
+├─ inference.sh
+├─ README.md
+├─ .python_version
+├─ poetry.lock
+└─ pyproject.toml
+```
+
 **Usage Instructions**
 
 1) Data Preparation
@@ -25,10 +63,50 @@
         valid.to_csv("data/valid_data.csv", index=False)
         ```
 2) Environment Setup
-    ```
-    poetry install
-    poetry shell
-    ````
+    - pyenv 설치 후 진행
+        ```
+        pyenv install 3.10.13
+        pyenv local 3.10.13
+        ```
+
+    - poetry 설치 후 진행
+
+        ```
+        poetry install # 의존성 설치
+        poetry shell # 가상환경 활성화
+        ```
+
+    - `pyproject.toml` 파일 내용
+
+        ```
+        [tool.poetry]
+        name = "upstage-assignment"
+        version = "0.1.0"
+        description = ""
+        authors = ["Your Name <you@example.com>"]
+        readme = "README.md"
+
+        [tool.poetry.dependencies]
+        python = "^3.10"
+        requests = "^2.32.3"
+        pandas = "^2.2.3"
+        tqdm = "^4.67.1"
+        torch = "^2.5.1"
+        transformers = "^4.47.1"
+        scikit-learn = "^1.6.0"
+        numpy = "^2.2.0"
+
+
+        [build-system]
+        requires = ["poetry-core"]
+        build-backend = "poetry.core.masonry.api"
+        ```
+    
+    - (선택) pyenv의 파이썬 버전을 poetry가 사용하도록 설정
+        ```
+        poetry env use 3.10.13
+        ```
+
 
 3) Model Training
     ```
