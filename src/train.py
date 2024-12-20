@@ -23,18 +23,16 @@ def main(args):
 
     train_dataset = RelationDataset(args.train_file, args.model_name_or_path, args.max_length, label2id, 
                                     use_entity_markers=args.use_entity_markers, use_entity_types=args.use_entity_types,
-                                    use_span_pooling=args.use_span_pooling, inference=False)    
+                                    use_span_pooling=args.use_span_pooling, inference=False)
     valid_dataset = RelationDataset(args.valid_file, args.model_name_or_path, args.max_length, label2id, 
                                     use_entity_markers=args.use_entity_markers, use_entity_types=args.use_entity_types,
-                                    use_span_pooling=args.use_span_pooling, inference=True)
+                                    use_span_pooling=args.use_span_pooling, inference=False)
     
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False)
 
     model = RelationClassifier(args.model_name_or_path, num_labels, args.dropout, 
                                len(train_dataset.tokenizer), args.use_span_pooling)
-    if args.use_cuda:
-        model = model.to("cuda")
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     num_training_steps = len(train_loader) * args.num_epochs
@@ -51,7 +49,18 @@ def main(args):
     best_f1 = 0.0
     best_auprc = 0.0
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() and args.use_cuda else "cpu")
+    if not torch.backends.mps.is_available():
+        if not torch.backends.mps.is_built():
+            print("MPS not available because the current PyTorch install was not "
+                "built with MPS enabled.")
+        else:
+            print("MPS not available because the current MacOS version is not 12.3+ "
+                "and/or you do not have an MPS-enabled device on this machine.")
+    else:
+        device = torch.device("mps")
+    
+    model.to(device)
 
     # training
     for epoch in range(args.num_epochs):
@@ -60,10 +69,12 @@ def main(args):
 
         for batch in tqdm(train_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
+            batch.pop("id")
+            labels = batch.pop("label")
 
             optimizer.zero_grad()
             logits = model(**batch)
-            train_loss_val = loss_fn(logits, batch["labels"])
+            train_loss_val = loss_fn(logits, labels)
             train_loss_val.backward()
             optimizer.step()
             scheduler.step()
@@ -76,15 +87,19 @@ def main(args):
         all_preds = []
         all_labels = []
         all_probs = []
-        for batch in tqdm(valid_loader):
-            batch = {k: v.to(device) for k, v in batch.items()}
-            logits = model(**batch)
-            probs = torch.softmax(logits, dim=1)
-            preds = torch.argmax(probs, dim=1)
+        with torch.no_grad():
+            for batch in tqdm(valid_loader):
+                batch = {k: v.to(device) for k, v in batch.items()}
+                batch.pop("id")
+                labels = batch.pop("label")
 
-            all_preds.extend(preds.cpu().numpy().tolist())
-            all_labels.extend(batch["labels"].cpu().numpy().tolist())
-            all_probs.extend(probs.cpu().numpy().tolist())
+                logits = model(**batch)
+                probs = torch.softmax(logits, dim=1)
+                preds = torch.argmax(probs, dim=1)
+
+                all_preds.extend(preds.cpu().numpy().tolist())
+                all_labels.extend(labels.cpu().numpy().tolist())
+                all_probs.extend(probs.cpu().numpy().tolist())
 
 
         # calculate metrics
@@ -101,7 +116,10 @@ def main(args):
                 model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name)])
                 model_name = f"{model_base_name}_{model_num+1}"
                 with open(os.path.join(args.output_dir, model_name+".json"), "w") as f:
-                    json.dump(args.__dict__, f, ensure_ascii=False)
+                    result_dict = args.__dict__
+                    result_dict["micro_f1"] = best_f1
+                    result_dict["auprc"] = auprc
+                    json.dump(result_dict, f, ensure_ascii=False)
                 torch.save(model.state_dict(), os.path.join(args.output_dir, model_name+".pth"))
                 
 
@@ -118,7 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=LEARNING_RATE)
     parser.add_argument("--max_length", type=int, default=MAX_LENGTH)
     parser.add_argument("--dropout", type=float, default=DROPOUT)
-    parser.add_argument("--scheduler", type=str, default="linear")
+    parser.add_argument("--scheduler", choices=["linear", "cosine"], default="linear")
     parser.add_argument("--focal_loss", action="store_true")
     parser.add_argument("--label_smoothing", type=float, default=LABEL_SMOOTHING)
     parser.add_argument("--alpha", type=float, default=ALPHA)

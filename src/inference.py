@@ -26,7 +26,7 @@ def main(args):
                                     inference=True)
     test_loader = DataLoader(test_dataset, batch_size=model_config["batch_size"], shuffle=False)
     
-    model = RelationClassifier(model_config["model_name_or_path"], model_config["num_labels"], model_config["dropout"], 
+    model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 
                                len(test_dataset.tokenizer), model_config["use_span_pooling"])
     model.load_state_dict(torch.load(os.path.join(args.model_dir, args.model_file + ".pth")))
     model.to(device)
@@ -39,6 +39,7 @@ def main(args):
     with torch.no_grad():
         for batch in tqdm(test_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
+            ids = batch.pop("id")
             
             logits = model(**batch)
             probs = torch.softmax(logits, dim=1)
@@ -48,7 +49,7 @@ def main(args):
             
             all_preds.extend(preds)
             all_probs.extend(probs.cpu().numpy().tolist())
-            all_ids.extend(batch["id"].cpu().numpy().tolist())
+            all_ids.extend(ids.cpu().numpy().tolist())
    
     results = pd.DataFrame({"id": all_ids, "pred_label": all_preds, "probs": all_probs})
     results["id"] = results["id"].astype(int)
