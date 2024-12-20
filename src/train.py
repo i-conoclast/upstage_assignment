@@ -116,7 +116,10 @@ def main(args):
                 model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name)])
                 model_name = f"{model_base_name}_{model_num+1}"
                 with open(os.path.join(args.output_dir, model_name+".json"), "w") as f:
-                    json.dump(args.__dict__, f, ensure_ascii=False)
+                    result_dict = args.__dict__
+                    result_dict["micro_f1"] = best_f1
+                    result_dict["auprc"] = auprc
+                    json.dump(result_dict, f, ensure_ascii=False)
                 torch.save(model.state_dict(), os.path.join(args.output_dir, model_name+".pth"))
                 
 
