@@ -3,7 +3,8 @@ import pandas as pd
 from torch.util.data import Dataset
 from transformers import AutoTokenizer
 
-# TODO : [E1], [/E1], [E2], [/E2] should be added to config file
+from config import (E1_MARKER, E1_MARKER_CLOSE, E2_MARKER, E2_MARKER_CLOSE,
+                    E1_MARKER_PREFIX, E1_MARKER_CLOSE_PREFIX, E2_MARKER_PREFIX, E2_MARKER_CLOSE_PREFIX)
 
 class RelationDataset(Dataset):
     def __init__(self, file_path: str, tokenizer_name: str, max_length: int,
@@ -23,7 +24,7 @@ class RelationDataset(Dataset):
         self.data["subject_entity"] = self.data["subject_entity"].apply(ast.literal_eval)
         self.data["object_entity"] = self.data["object_entity"].apply(ast.literal_eval)
         if self.use_span_pooling:
-            self.tokenizer.add_tokens(["[E1]", "[/E1]", "[E2]", "[/E2]"])
+            self.tokenizer.add_tokens([E1_MARKER, E1_MARKER_CLOSE, E2_MARKER, E2_MARKER_CLOSE])
 
     def __len__(self) -> int:
         return len(self.data)
@@ -53,8 +54,8 @@ class RelationDataset(Dataset):
         e2_start_idx, e2_end_idx = None, None
         if self.use_span_pooling:
             tokens = self.tokenizer.convert_ids_to_tokens(input_ids)
-            e1_start_idx, e1_end_idx = self.find_span(tokens, marker_open_prefix="[E1", marker_close_prefix="[/E1")
-            e2_start_idx, e2_end_idx = self.find_span(tokens, marker_open_prefix="[E2", marker_close_prefix="[/E2")
+            e1_start_idx, e1_end_idx = self.find_span(tokens, E1_MARKER_PREFIX, E1_MARKER_CLOSE_PREFIX)
+            e2_start_idx, e2_end_idx = self.find_span(tokens, E2_MARKER_PREFIX, E2_MARKER_CLOSE_PREFIX)
 
         if not self.inference:
             label = item["label"]
@@ -113,7 +114,9 @@ class RelationDataset(Dataset):
 
         return sentence
 
-    def find_span(self, tokens: list, marker_open_prefix: str, marker_close_prefix: str) -> tuple:
+    def find_span(self, tokens: list, 
+                  marker_open_prefix: str = E1_MARKER_PREFIX, 
+                  marker_close_prefix: str = E1_MARKER_CLOSE_PREFIX) -> tuple:
         open_idx = None
         close_idx = None
 
