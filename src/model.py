@@ -61,7 +61,7 @@ class RelationClassifier(nn.Module):
             concat_vec = self.dropout(concat_vec)
             logits = self.classifier(concat_vec)
         else:
-
+            # use cls token
             cls_output = outputs.last_hidden_state[:, 0, :]
             cls_output = self.dropout(cls_output)
             logits = self.classifier(cls_output)
