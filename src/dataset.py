@@ -1,6 +1,6 @@
 import ast
 import pandas as pd
-from torch.util.data import Dataset
+from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
 from config import (E1_MARKER, E1_MARKER_CLOSE, E2_MARKER, E2_MARKER_CLOSE,
