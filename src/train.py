@@ -87,18 +87,19 @@ def main(args):
         all_preds = []
         all_labels = []
         all_probs = []
-        for batch in tqdm(valid_loader):
-            batch = {k: v.to(device) for k, v in batch.items()}
-            batch.pop("id")
-            labels = batch.pop("label")
+        with torch.no_grad():
+            for batch in tqdm(valid_loader):
+                batch = {k: v.to(device) for k, v in batch.items()}
+                batch.pop("id")
+                labels = batch.pop("label")
 
-            logits = model(**batch)
-            probs = torch.softmax(logits, dim=1)
-            preds = torch.argmax(probs, dim=1)
+                logits = model(**batch)
+                probs = torch.softmax(logits, dim=1)
+                preds = torch.argmax(probs, dim=1)
 
-            all_preds.extend(preds.cpu().numpy().tolist())
-            all_labels.extend(labels.cpu().numpy().tolist())
-            all_probs.extend(probs.cpu().numpy().tolist())
+                all_preds.extend(preds.cpu().numpy().tolist())
+                all_labels.extend(labels.cpu().numpy().tolist())
+                all_probs.extend(probs.cpu().numpy().tolist())
 
 
         # calculate metrics
