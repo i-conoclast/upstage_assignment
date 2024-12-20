@@ -26,7 +26,7 @@ def main(args):
                                     inference=True)
     test_loader = DataLoader(test_dataset, batch_size=model_config["batch_size"], shuffle=False)
     
-    model = RelationClassifier(model_config["model_name_or_path"], model_config["num_labels"], model_config["dropout"], 
+    model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 
                                len(test_dataset.tokenizer), model_config["use_span_pooling"])
     model.load_state_dict(torch.load(os.path.join(args.model_dir, args.model_file + ".pth")))
     model.to(device)
