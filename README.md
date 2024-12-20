@@ -13,7 +13,7 @@
 - 의존성 관리 도구로 `Poetry` 사용
 - 상세 내용은 Usage Instructions - 2) Environment Setup 참고
 
-** Code Structure **
+**Code Structure**
 
 ```
 📦 upstage_assignment
