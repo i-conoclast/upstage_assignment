@@ -109,12 +109,14 @@ def main(args):
 
         print(f"Epoch {epoch+1} - Train Loss: {avg_train_loss:.4f} - Valid Micro F1: {micro_f1:.4f} - Valid AUPRC: {auprc:.4f}")
 
+
+        model_base_name = f"best_model_{datetime.now().strftime('%Y%m%d')}"
+        model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name)])
+        model_name = f"{model_base_name}_{model_num+1}"
+        
         if micro_f1 > best_f1:
             best_f1 = micro_f1
             if args.save_model:
-                model_base_name = f"best_model_{datetime.now().strftime('%Y%m%d')}"
-                model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name)])
-                model_name = f"{model_base_name}_{model_num+1}"
                 with open(os.path.join(args.output_dir, model_name+".json"), "w") as f:
                     result_dict = args.__dict__
                     result_dict["micro_f1"] = best_f1
