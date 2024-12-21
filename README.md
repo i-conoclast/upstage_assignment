@@ -200,7 +200,7 @@
 **Training/Evaluation Scheme**
 
 - Loss Function & 불균형 대응
-    - Focal Loss 사용: \gamma=1.0와 \alpha=0.25를 Grid Search로 최적화하여 희소 클래스에 대한 학습을 강화했습니다.
+    - Focal Loss 사용: $\gamma=1.0$와 $\alpha=0.25$를 Grid Search로 최적화하여 희소 클래스에 대한 학습을 강화했습니다.
     - 기존 Cross Entropy 대비 희소 클래스 식별력이 향상됨을 확인했습니다.
     
 - Learning Rate Scheduler
