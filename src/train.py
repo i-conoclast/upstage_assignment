@@ -33,7 +33,7 @@ def main(args):
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False)
 
     model = RelationClassifier(args.model_name_or_path, num_labels, args.dropout, 
-                               len(train_dataset.tokenizer), args.use_span_pooling)
+                               len(train_dataset.tokenizer), args.use_span_pooling, args.use_attention_pooling)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     num_training_steps = len(train_loader) * args.num_epochs
@@ -148,6 +148,7 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float, default=ALPHA)
     parser.add_argument("--gamma", type=float, default=GAMMA)
     parser.add_argument("--use_span_pooling", action="store_true")
+    parser.add_argument("--use_attention_pooling", action="store_true")
     parser.add_argument("--use_entity_markers", action="store_true")
     parser.add_argument("--use_entity_types", action="store_true")
     parser.add_argument("--use_cuda", action="store_true")
