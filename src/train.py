@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--valid_file", type=str, default=VALID_FILE)
     parser.add_argument("--label2id_path", type=str, default=LABEL2ID_PATH)
     parser.add_argument("--id2label_path", type=str, default=ID2LABEL_PATH)
-    parser.add_argument("--output_dir", type=str, default=MODEL_DIR)
+    parser.add_argument("--model_dir", type=str, default=MODEL_DIR)
     parser.add_argument("--batch_size", type=int, default=BATCH_SIZE)
     parser.add_argument("--num_epochs", type=int, default=NUM_EPOCHS)
     parser.add_argument("--learning_rate", type=float, default=LEARNING_RATE)
