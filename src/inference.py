@@ -23,11 +23,11 @@ def main(args):
     test_dataset = RelationDataset(args.test_file, model_config["model_name_or_path"], model_config["max_length"], 
                                     label2id, use_entity_markers=model_config["use_entity_markers"], 
                                     use_entity_types=model_config["use_entity_types"], use_span_pooling=model_config["use_span_pooling"], 
-                                    use_attention_pooling=model_config["use_attention_pooling"], inference=True)
+                                    inference=True)
     test_loader = DataLoader(test_dataset, batch_size=model_config["batch_size"], shuffle=False)
     
     model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 
-                               len(test_dataset.tokenizer), model_config["use_span_pooling"])
+                               len(test_dataset.tokenizer), model_config["use_span_pooling"], model_config["use_attention_pooling"])
     model.load_state_dict(torch.load(os.path.join(args.model_dir, args.model_file + ".pth")))
     model.to(device)
     model.eval()
