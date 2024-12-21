@@ -146,7 +146,6 @@
     --label2id_path utils/dict_label_to_num.pkl \
     --id2label_path utils/dict_num_to_label.pkl \
     --model_dir models \
-    --output_dir outputs \
     --focal_loss \
     --label_smoothing 0.09 \
     --alpha 1.0 \
@@ -166,6 +165,7 @@
     ```
     python src/inference.py \
     --model_file models/{모델명}.pth \
+    --model_dir models \
     --output_dir outputs \
     --test_file data/test_data.csv \
     ```
