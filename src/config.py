@@ -46,16 +46,25 @@ BATCH_SIZE = 16
 NUM_EPOCHS = 10
 LEARNING_RATE = 3e-5
 MAX_LENGTH = 128
+FOCAL_LOSS = True
 LABEL_SMOOTHING = 0.09
 ALPHA = 0.25 # best alpha
 GAMMA = 1.0 # best gamma
 DROPOUT = 0.1
-LABEL2ID_PATH = "utils/dict_label_to_num.pkl"
-ID2LABEL_PATH = "utils/dict_num_to_label.pkl"
+LABEL2ID_PATH = "tools/dict_label_to_num.pkl"
+ID2LABEL_PATH = "tools/dict_num_to_label.pkl"
+SCHEDULER = "cosine"
 
-TRAIN_FILE = "../data/train_data.csv"
-VALID_FILE = "../data/valid_data.csv"
-TEST_FILE = "../data/test_data.csv"
+TRAIN_FILE = "data/train_data.csv"
+VALID_FILE = "data/valid_data.csv"
+TEST_FILE = "data/test_data.csv"
 
-MODEL_DIR = "../models"
-OUTPUT_DIR = "../outputs"
+MODEL_DIR = "models"
+OUTPUT_DIR = "outputs"
+
+USE_SPAN_POOLING = True
+USE_ATTENTION_POOLING = True
+USE_ENTITY_MARKERS = True
+USE_ENTITY_TYPES = True
+USE_CUDA = True
+SAVE_MODEL = True
