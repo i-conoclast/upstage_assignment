@@ -117,16 +117,16 @@ def main(args):
 
     if args.save_model and best_state_dict:
         model_base_name = f"best_model_{datetime.now().strftime('%Y%m%d')}"
-        model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name) and f.endswith(".pth")])
+        model_num = len([f for f in os.listdir(args.model_dir) if f.startswith(model_base_name) and f.endswith(".pth")])
         model_name = f"{model_base_name}_{model_num+1}"
 
         result_dict = args.__dict__
         result_dict["micro_f1"] = best_f1
         result_dict["auprc"] = best_auprc
         
-        with open(os.path.join(args.output_dir, model_name+".json"), "w") as f:    
+        with open(os.path.join(args.model_dir, model_name+".json"), "w") as f:    
             json.dump(result_dict, f, ensure_ascii=False)
-        torch.save(model.state_dict(), os.path.join(args.output_dir, model_name+".pth"))
+        torch.save(model.state_dict(), os.path.join(args.model_dir, model_name+".pth"))
                 
 
 if __name__ == "__main__":
