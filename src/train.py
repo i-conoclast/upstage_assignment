@@ -127,7 +127,8 @@ def main(args):
         with open(os.path.join(args.model_dir, model_name+".json"), "w") as f:    
             json.dump(result_dict, f, ensure_ascii=False)
         torch.save(model.state_dict(), os.path.join(args.model_dir, model_name+".pth"))
-                
+    
+    return best_f1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
