@@ -1,7 +1,7 @@
 
 ## 1. Summary
 
-본 레포지토리에서는 한국어 문장에서 두 엔티티 간 관계를 추출하는 태스크를 다루고 있습니다.  데이터 탐색(EDA) 결과, 특히 no_relation 클래스로 인해 심각한 불균형 문제가 발생한다는 점을 확인했습니다. 또한, 특정 엔티티 타입 조합(예: ORG-PER)에서 특정 관계가 집중적으로 발생한다는 패턴이 발견되었고, 일부 존재하는 긴 문장에 대한 정보 손실을 줄이지 않도록 max_length를 적절한 수준(128~160)으로 설정했습니다. 이러한 분석에 따라 엔티티 마커(타입 정보 포함 가능), Focal Loss(gamma=1.0, alpha=0.25로 Grid Search로 최적화), 그리고 linear/cosine LR 스케줄러 등을 적용해 모델 성능을 개선했습니다. 평가에서는 과제의 평가지표인 no_relation을 제외한 Micro-F1, AUPRC를 지표로 사용했습니다. 한편, 엔티티 스팬 풀링과 Attention 기반 풀링 등을 추가 적용해 엔티티 집중도를 높여 성능을 높이고자 했고, 스팬 기반 모델을 사용하여 성능을 더욱 높이고자 했습니다.
+본 레포지토리에서는 한국어 문장에서 두 엔티티 간 관계를 추출하는 태스크를 다루고 있습니다.  데이터 탐색(EDA) 결과, 특히 no_relation 클래스로 인해 심각한 불균형 문제가 발생한다는 점을 확인했습니다. 또한, 특정 엔티티 타입 조합(예: ORG-PER)에서 특정 관계가 집중적으로 발생한다는 패턴이 발견되었고, 일부 존재하는 긴 문장에 대한 정보 손실을 줄이지 않도록 max_length를 적절한 수준(128~160)으로 설정했습니다. 이러한 분석에 따라 엔티티 마커(타입 정보 포함 가능), Focal Loss(gamma=1.0, alpha=0.25로 Grid Search로 최적화), 그리고 linear/cosine LR 스케줄러 등을 적용해 모델 성능을 개선했습니다. 평가에서는 과제의 평가지표인 no_relation을 제외한 Micro-F1, AUPRC를 지표로 사용했습니다. 한편, 엔티티 스팬 풀링과 Attention 기반 풀링 등을 추가 적용해 엔티티 집중도를 높여 성능을 높이고자 했습니다.
 
 ## 2. Experimental Results
 
@@ -224,14 +224,10 @@
     - 한국어 전용 벤치마크로, KLUE-RE에서 다양한 baseline 및 SOTA 모델이 제시되었습니다.
     - 문헌에서 엔티티 마커, 타입 정보 활용 시 성능이 크게 향상된다고 보고되었습니다.
 
-2.	Span-based Models (LUKE([LUKE: Deep Contextualized Entity Representations with Entity-aware Self-attention](https://arxiv.org/abs/2010.01057)), SpanBERT([SpanBERT: Improving Pre-training by Representing and Predicting Spans](https://arxiv.org/abs/1907.10529)))
-    - LUKE: 엔티티-aware pretraining으로 관계 추출에 우수한 성능을 보였습니다.
-    - SpanBERT: 스팬 단위 마스킹 및 학습 기법이 관계 판단에 도움이 된다는 점을 시사했습니다.
-
-3.	Focal Loss([Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002))
+2.	Focal Loss([Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002))
     - Tsung-Yi Lin (2017)에서 제안된 기법으로, $\gamma$, $\alpha$ 조정 시 불균형 데이터에서의 희소 클래스 식별력이 개선된 것을 보여주고 있습니다.
 
-4.	Attention Pooling 및 Entity Marker 연구([An Improved Baseline for Sentence-level Relation Extraction](https://arxiv.org/abs/2102.01373))
+3.	Attention Pooling 및 Entity Marker 연구([An Improved Baseline for Sentence-level Relation Extraction](https://arxiv.org/abs/2102.01373))
     - 기존 NER, RE 연구에서 [E1], [E2] 마커를 삽입 시 모델이 엔티티 위치와 타입을 더욱 명확히 인지해 성능 향상을 보인다고 보고되었습니다.
     - Attention Pooling은 많은 NLP 과제에서 문맥 중요 토큰에 가중치를 주는 방식으로 성능 개선에 기여합니다.
 
@@ -242,4 +238,4 @@
     - 희소 클래스 샘플을 중심으로 증강하면 불균형 완화 효과가 기대할 수 있습니다.
 
 2.	더 큰 모델 및 앙상블
-    - KoELECTRA·KLUE-RoBERTa·LUKE 등 모델 앙상블을 시도해 추가적인 성능 향상을 모색할 수 있습니다.
+    - KoELECTRA·KLUE-RoBERTa 등 모델 앙상블을 시도해 추가적인 성능 향상을 모색할 수 있습니다.
