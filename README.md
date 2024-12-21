@@ -229,7 +229,7 @@
     - SpanBERT: 스팬 단위 마스킹 및 학습 기법이 관계 판단에 도움이 된다는 점을 시사했습니다.
 
 3.	Focal Loss([Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002))
-    - Tsung-Yi Lin (2017)에서 제안된 기법으로, \gamma, \alpha 조정 시 불균형 데이터에서의 희소 클래스 식별력이 개선된 것을 보여주고 있습니다.
+    - Tsung-Yi Lin (2017)에서 제안된 기법으로, $\gamma$, $\alpha$ 조정 시 불균형 데이터에서의 희소 클래스 식별력이 개선된 것을 보여주고 있습니다.
 
 4.	Attention Pooling 및 Entity Marker 연구([An Improved Baseline for Sentence-level Relation Extraction](https://arxiv.org/abs/2102.01373))
     - 기존 NER, RE 연구에서 [E1], [E2] 마커를 삽입 시 모델이 엔티티 위치와 타입을 더욱 명확히 인지해 성능 향상을 보인다고 보고되었습니다.
