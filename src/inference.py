@@ -23,7 +23,7 @@ def main(args):
     test_dataset = RelationDataset(args.test_file, model_config["model_name_or_path"], model_config["max_length"], 
                                     label2id, use_entity_markers=model_config["use_entity_markers"], 
                                     use_entity_types=model_config["use_entity_types"], use_span_pooling=model_config["use_span_pooling"], 
-                                    inference=True)
+                                    use_attention_pooling=model_config["use_attention_pooling"], inference=True)
     test_loader = DataLoader(test_dataset, batch_size=model_config["batch_size"], shuffle=False)
     
     model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 

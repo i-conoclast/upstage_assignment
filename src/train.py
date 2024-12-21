@@ -33,7 +33,7 @@ def main(args):
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False)
 
     model = RelationClassifier(args.model_name_or_path, num_labels, args.dropout, 
-                               len(train_dataset.tokenizer), args.use_span_pooling)
+                               len(train_dataset.tokenizer), args.use_span_pooling, args.use_attention_pooling)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     num_training_steps = len(train_loader) * args.num_epochs
@@ -117,16 +117,16 @@ def main(args):
 
     if args.save_model and best_state_dict:
         model_base_name = f"best_model_{datetime.now().strftime('%Y%m%d')}"
-        model_num = len([f for f in os.listdir(args.output_dir) if f.startswith(model_base_name) and f.endswith(".pth")])
+        model_num = len([f for f in os.listdir(args.model_dir) if f.startswith(model_base_name) and f.endswith(".pth")])
         model_name = f"{model_base_name}_{model_num+1}"
 
         result_dict = args.__dict__
         result_dict["micro_f1"] = best_f1
         result_dict["auprc"] = best_auprc
         
-        with open(os.path.join(args.output_dir, model_name+".json"), "w") as f:    
+        with open(os.path.join(args.model_dir, model_name+".json"), "w") as f:    
             json.dump(result_dict, f, ensure_ascii=False)
-        torch.save(model.state_dict(), os.path.join(args.output_dir, model_name+".pth"))
+        torch.save(model.state_dict(), os.path.join(args.model_dir, model_name+".pth"))
                 
 
 if __name__ == "__main__":
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--valid_file", type=str, default=VALID_FILE)
     parser.add_argument("--label2id_path", type=str, default=LABEL2ID_PATH)
     parser.add_argument("--id2label_path", type=str, default=ID2LABEL_PATH)
-    parser.add_argument("--output_dir", type=str, default=MODEL_DIR)
+    parser.add_argument("--model_dir", type=str, default=MODEL_DIR)
     parser.add_argument("--batch_size", type=int, default=BATCH_SIZE)
     parser.add_argument("--num_epochs", type=int, default=NUM_EPOCHS)
     parser.add_argument("--learning_rate", type=float, default=LEARNING_RATE)
@@ -148,6 +148,7 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float, default=ALPHA)
     parser.add_argument("--gamma", type=float, default=GAMMA)
     parser.add_argument("--use_span_pooling", action="store_true")
+    parser.add_argument("--use_attention_pooling", action="store_true")
     parser.add_argument("--use_entity_markers", action="store_true")
     parser.add_argument("--use_entity_types", action="store_true")
     parser.add_argument("--use_cuda", action="store_true")
