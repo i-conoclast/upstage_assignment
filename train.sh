@@ -11,6 +11,7 @@ python src/train.py \
     --label_smoothing 0.09 \
     --alpha 1.0 \
     --gamma 2.0 \
+    --scheduler cosine \
     --use_entity_markers \
     --use_entity_types \
     --use_span_pooling 
