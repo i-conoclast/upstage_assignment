@@ -89,6 +89,7 @@ def parse_args():
     parser.add_argument("--use_attention_pooling", action="store_true")
     parser.add_argument("--use_entity_markers", action="store_true")
     parser.add_argument("--use_entity_types", action="store_true")
+    parser.add_argument("--early_stopping_patience", type=int, default=3)
     parser.add_argument("--use_cuda", action="store_true")
     parser.add_argument("--save_model", action="store_true")
     parser.add_argument("--study_name", type=str)
