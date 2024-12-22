@@ -180,8 +180,11 @@ def main(args):
         "pred_label": str_labels,
     }
 
-    if final_probs:
-        data_dict["probs"] = final_probs.tolist()
+    if final_probs is not None:
+        prob_list_col = []
+        for row in final_probs:
+            prob_list_col.append(row.tolist())
+        data_dict["probs"] = prob_list_col
     
     out_df = pd.DataFrame(data_dict)
     out_df["id"] = out_df["id"].astype(int)
