@@ -27,7 +27,7 @@ def objective(trial, base_args):
     learning_rate = trial.suggest_float("learning_rate", 1e-5, 5e-5, log=True)
     
     # scheduler
-    scheduler = trial.suggest_categorical("scheduler", ["linear", "cosine"])
+    scheduler = trial.suggest_categorical("scheduler", ["linear", "cosine", "cosine_with_restarts", "polynomial", "constant", "constant_with_warmup"])
 
     # focal_loss and corresponding parameters(alpha, gamma)
     focal_loss = trial.suggest_categorical("focal_loss", [True, False])
