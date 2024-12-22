@@ -105,7 +105,7 @@ def optimize():
     
     study = optuna.create_study(direction="maximize", 
                                 sampler=TPESampler(seed=42), 
-                                pruner=HyperbandPruner(min_resource=1, reduction_factor=3),
+                                pruner=HyperbandPruner(min_resource=1, max_resource=15, reduction_factor=3),
                                 study_name=base_args.study_name,
                                 storage=f"sqlite:///upstage_assignment.db",
                                 load_if_exists=True)

@@ -112,7 +112,7 @@ def main(args, trial=None):
         if trial:
             trial.report(micro_f1, epoch)
             if trial.should_prune():
-                raise optuna.exceptions.TrialPruned()
+                raise optuna.TrialPruned()
 
         if micro_f1 > best_f1:
             best_f1 = micro_f1
