@@ -86,7 +86,7 @@ def compute_metrics(eval_pred):
     logits, labels = eval_pred
     # logits shape: (batch_size, num_labels)
     # labels: (batch_size, )
-    probs = torch.softmax(torch.tensor(logits), dim=1)
+    probs = torch.softmax(torch.tensor(logits), dim=-1)
     preds = np.argmax(probs, axis=1)
 
     no_relation = "no_relation"
