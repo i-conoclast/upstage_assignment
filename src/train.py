@@ -5,6 +5,7 @@ from datetime import datetime
 import torch
 from torch.utils.data import DataLoader
 from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+import optuna
 
 from dataset import RelationDataset
 from tools.utils import make_mapping
@@ -18,7 +19,7 @@ from config import (NUM_EPOCHS, LEARNING_RATE, BATCH_SIZE, NUM_LABELS,
 import argparse
 from tqdm import tqdm
 
-def main(args):
+def main(args, trial=None):
     label2id, id2label = make_mapping(args.label2id_path, args.id2label_path)
     num_labels = NUM_LABELS
 
@@ -109,6 +110,12 @@ def main(args):
         auprc = compute_auprc(all_labels, all_probs)
 
         print(f"Epoch {epoch+1} - Train Loss: {avg_train_loss:.4f} - Valid Micro F1: {micro_f1:.4f} - Valid AUPRC: {auprc:.4f}")
+
+
+        if trial:
+            trial.report(micro_f1, epoch)
+            if trial.should_prune():
+                raise optuna.TrialPruned()
 
         if micro_f1 > best_f1:
             best_f1 = micro_f1
