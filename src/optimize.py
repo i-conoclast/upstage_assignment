@@ -14,7 +14,6 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.FileHandler(f"logs/optimize_{datetime.now().strftime('%Y%m%d')}.log", mode="w"))
 
 optuna.logging.enable_propagation()
-optuna.logging.disable_default_handler()
 optuna.logging.set_verbosity(optuna.logging.INFO)
 
 def objective(trial, base_args):
@@ -106,7 +105,7 @@ def optimize():
     
     study = optuna.create_study(direction="maximize", 
                                 sampler=TPESampler(seed=42), 
-                                pruner=HyperbandPruner(min_resource=1, max_resource=100, reduction_factor=3),
+                                pruner=HyperbandPruner(min_resource=1, reduction_factor=3),
                                 study_name=base_args.study_name,
                                 storage=f"sqlite:///upstage_assignment.db",
                                 load_if_exists=True)
