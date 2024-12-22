@@ -80,7 +80,7 @@ def parse_args():
     parser.add_argument("--learning_rate", type=float)
     parser.add_argument("--max_length", type=int)
     parser.add_argument("--dropout", type=float)
-    parser.add_argument("--scheduler", choices=["linear", "cosine"], default="linear")
+    parser.add_argument("--scheduler", choices=["linear", "cosine", "cosine_with_restarts", "polynomial", "constant", "constant_with_warmup"], default="linear")
     parser.add_argument("--focal_loss", action="store_true")
     parser.add_argument("--label_smoothing", type=float)
     parser.add_argument("--alpha", type=float)

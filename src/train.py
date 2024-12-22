@@ -4,7 +4,7 @@ import copy
 from datetime import datetime
 import torch
 from torch.utils.data import DataLoader
-from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+from transformers import get_scheduler
 import optuna
 
 from dataset import RelationDataset
@@ -38,10 +38,7 @@ def main(args, trial=None):
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     num_training_steps = len(train_loader) * args.num_epochs
-    if args.scheduler == "linear":
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(num_training_steps*0.1), num_training_steps=num_training_steps)
-    elif args.scheduler == "cosine":
-        scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=int(num_training_steps*0.1), num_training_steps=num_training_steps)
+    scheduler = get_scheduler(name=args.scheduler, optimizer=optimizer, num_warmup_steps=int(num_training_steps*0.1), num_training_steps=num_training_steps)
 
     if args.focal_loss:
         loss_fn = FocalLoss(alpha=args.alpha, gamma=args.gamma, label_smoothing=args.label_smoothing)
@@ -115,7 +112,7 @@ def main(args, trial=None):
         if trial:
             trial.report(micro_f1, epoch)
             if trial.should_prune():
-                raise optuna.TrialPruned()
+                raise optuna.exceptions.TrialPruned()
 
         if micro_f1 > best_f1:
             best_f1 = micro_f1
@@ -150,7 +147,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=LEARNING_RATE)
     parser.add_argument("--max_length", type=int, default=MAX_LENGTH)
     parser.add_argument("--dropout", type=float, default=DROPOUT)
-    parser.add_argument("--scheduler", choices=["linear", "cosine"], default="linear")
+    parser.add_argument("--scheduler", choices=["linear", "cosine", "cosine_with_restarts", "polynomial", "constant", "constant_with_warmup"], default="linear")
     parser.add_argument("--focal_loss", action="store_true")
     parser.add_argument("--label_smoothing", type=float, default=LABEL_SMOOTHING)
     parser.add_argument("--alpha", type=float, default=ALPHA)
