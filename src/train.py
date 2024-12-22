@@ -122,7 +122,7 @@ def main(args, trial=None):
             best_auprc = auprc
             best_state_dict = copy.deepcopy(model.state_dict())
 
-    if args.save_model and best_state_dict:
+    if args.save_model and best_state_dict and not trial:
         model_base_name = f"best_model_{datetime.now().strftime('%Y%m%d')}"
         model_num = len([f for f in os.listdir(args.model_dir) if f.startswith(model_base_name) and f.endswith(".pth")])
         model_name = f"{model_base_name}_{model_num+1}"
