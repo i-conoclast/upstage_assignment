@@ -28,8 +28,7 @@ def main(args):
     
     model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 
                                len(test_dataset.tokenizer), model_config["use_span_pooling"], model_config["use_attention_pooling"])
-    model.load_state_dict(safetensors.torch.load_file(os.path.join(args.model_dir, args.model_file,
-                                                                  model_config["best_checkpoint_path"],  
+    model.load_state_dict(safetensors.torch.load_file(os.path.join(model_config["best_checkpoint_path"],  
                                                                   "model.safetensors")))
     model.to(device)
     model.eval()

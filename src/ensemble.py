@@ -76,9 +76,7 @@ def main(args):
                                   "best_model_config.json")
         with open(config_path, "r") as f:
             conf = json.load(f)
-        model_path = os.path.join(args.model_dir, 
-                                  mf, 
-                                  conf["best_checkpoint_path"],  
+        model_path = os.path.join(conf["best_checkpoint_path"],  
                                   "model.safetensors")
 
         num_labels = len(label2id)
