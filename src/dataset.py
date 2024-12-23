@@ -63,7 +63,7 @@ class RelationDataset(Dataset):
             return {"id": idx, 
                     "input_ids": input_ids, 
                     "attention_mask": attention_mask, 
-                    "label": label_id,
+                    "labels": label_id,
                     "e1_start_idx": e1_start_idx, 
                     "e1_end_idx": e1_end_idx, 
                     "e2_start_idx": e2_start_idx, 
