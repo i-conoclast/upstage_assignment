@@ -217,7 +217,9 @@ def main(args, trial=None):
         use_attention_pooling=args.use_attention_pooling
     )
 
-    folder_num = [int(folder.split("_")[-1]) for folder in os.listdir(args.model_dir) if folder.startswith("best_model_") and os.path.isdir(folder)] + [0]
+    folder_num = [int(folder.split("_")[-1]) for folder in os.listdir(args.model_dir) 
+                  if folder.startswith(f"best_model_{datetime.now().strftime('%Y%m%d')}") 
+                  and os.path.isdir(os.path.join(args.model_dir, folder))] + [0]
     folder_name = f"best_model_{datetime.now().strftime('%Y%m%d')}_{max(folder_num) + 1}"
     os.makedirs(os.path.join(args.model_dir, folder_name), exist_ok=True)
 
