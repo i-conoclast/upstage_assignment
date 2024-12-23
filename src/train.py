@@ -233,8 +233,8 @@ def main(args, trial=None):
         per_device_eval_batch_size=args.batch_size,
         lr_scheduler_type=args.scheduler,
         learning_rate=args.learning_rate,
-        evaluation_strategy="epoch" if args.save_model and trial is None else "no",
-        save_strategy="epoch" if args.save_model and trial is None else "no",
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
         save_safetensors=False,
         load_best_model_at_end=True,
         metric_for_best_model="micro_f1",  # compute_metrics() returns micro_f1
@@ -268,6 +268,9 @@ def main(args, trial=None):
     )
 
     trainer.train()
+
+    if trial:
+        os.remove(os.path.join(args.model_dir, folder_name))
 
     #if args.save_model:
        # trainer.save_model(os.path.join(args.model_dir, folder_name))
