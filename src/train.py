@@ -270,9 +270,14 @@ def main(args, trial=None):
        # trainer.save_model(os.path.join(args.model_dir, folder_name))
 
     with open(os.path.join(args.model_dir, folder_name, "best_model_config.json"), "w") as f:
-        json.dump(vars(args), f, ensure_ascii=False, indent=2)
+        args_dict = vars(args)
+        args_dict["micro_f1"] = trainer.state.best_metric
+        args_dict["best_checkpoint_path"] = trainer.state.best_model_checkpoint
+        json.dump(args_dict, f, ensure_ascii=False, indent=2)
 
     print("Best model is saved at:", trainer.state.best_model_checkpoint)
+
+    return trainer.state.best_metric
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
