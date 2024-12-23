@@ -77,7 +77,7 @@ def main(args):
         with open(config_path, "r") as f:
             conf = json.load(f)
         model_path = os.path.join(conf["best_checkpoint_path"],  
-                                  "model.safetensors")
+                                  "pytorch_model.bin")
 
         num_labels = len(label2id)
 

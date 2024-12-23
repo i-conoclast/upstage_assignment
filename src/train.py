@@ -235,6 +235,7 @@ def main(args, trial=None):
         learning_rate=args.learning_rate,
         evaluation_strategy="epoch",
         save_strategy="epoch",
+        save_safetensors=False,
         load_best_model_at_end=True,
         metric_for_best_model="micro_f1",  # compute_metrics() returns micro_f1
         greater_is_better=True,            # F1 => higher better
