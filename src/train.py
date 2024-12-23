@@ -171,6 +171,11 @@ def compute_metrics(eval_pred):
     probs = torch.softmax(torch.tensor(logits), dim=-1)
     preds = np.argmax(probs, axis=1)
 
+    if isinstance(labels, torch.Tensor):
+        labels = labels.detach().cpu().numpy()
+    if isinstance(preds, torch.Tensor):
+        preds = preds.detach().cpu().numpy()
+    
     no_relation = "no_relation"
 
     micro_f1 = compute_micro_f1(labels, preds, no_relation)
