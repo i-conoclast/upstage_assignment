@@ -72,14 +72,14 @@ def main(args):
 
     for i, mf in enumerate(model_files):
         config_path = os.path.join(args.model_dir, 
-                                  os.path.join(mf, 
-                                               "best_model_config.json"))
+                                  mf, 
+                                  "best_model_config.json")
         with open(config_path, "r") as f:
             conf = json.load(f)
         model_path = os.path.join(args.model_dir, 
-                                  os.path.join(mf, 
-                                               conf["best_checkpoint_path"],  
-                                               "model.safetensors"))
+                                  mf, 
+                                  conf["best_checkpoint_path"],  
+                                  "model.safetensors")
 
         num_labels = len(label2id)
 
