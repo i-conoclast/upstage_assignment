@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 from typing import Optional, List, Union, Any, Dict, Tuple
 from datetime import datetime
 import torch
@@ -270,7 +271,7 @@ def main(args, trial=None):
     trainer.train()
 
     if trial:
-        os.remove(os.path.join(args.model_dir, folder_name))
+        shutil.rmtree(os.path.join(args.model_dir, folder_name))
 
     #if args.save_model:
        # trainer.save_model(os.path.join(args.model_dir, folder_name))
