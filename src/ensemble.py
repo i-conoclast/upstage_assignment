@@ -8,7 +8,7 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 from torch.utils.data import DataLoader
-import safetensors
+
 from model import RelationClassifier
 from dataset import RelationDataset
 from tools.utils import make_mapping
@@ -100,7 +100,7 @@ def main(args):
                                    len(ds.tokenizer), 
                                    conf.get("use_span_pooling", False), 
                                    conf.get("use_attention_pooling", False))
-        model.load_state_dict(safetensors.torch.load_file(model_path))
+        model.load_state_dict(torch.load(model_path))
         model.eval().to(device)
 
         sample_ids = []

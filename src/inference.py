@@ -5,7 +5,7 @@ from tqdm import tqdm
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
-import safetensors
+
 from model import RelationClassifier
 from dataset import RelationDataset
 from tools.utils import make_mapping
@@ -28,7 +28,7 @@ def main(args):
     
     model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 
                                len(test_dataset.tokenizer), model_config["use_span_pooling"], model_config["use_attention_pooling"])
-    model.load_state_dict(safetensors.torch.load_file(os.path.join(model_config["best_checkpoint_path"],  
+    model.load_state_dict(torch.load(os.path.join(model_config["best_checkpoint_path"],  
                                                                   "pytorch_model.bin")))
     model.to(device)
     model.eval()
