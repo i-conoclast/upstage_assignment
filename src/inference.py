@@ -5,7 +5,7 @@ from tqdm import tqdm
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
-
+import safetensors
 from model import RelationClassifier
 from dataset import RelationDataset
 from tools.utils import make_mapping
@@ -15,7 +15,7 @@ from config import MODEL_DIR, OUTPUT_DIR, TEST_FILE
 def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() and args.use_cuda else "cpu")
 
-    model_config_file = os.path.join(args.model_dir, args.model_file + ".json")
+    model_config_file = os.path.join(args.model_dir, os.path.join(args.model_file,  "best_model_config.json"))
     with open(model_config_file, "r") as f:
         model_config = json.load(f)
 
@@ -28,7 +28,10 @@ def main(args):
     
     model = RelationClassifier(model_config["model_name_or_path"], len(label2id), model_config["dropout"], 
                                len(test_dataset.tokenizer), model_config["use_span_pooling"], model_config["use_attention_pooling"])
-    model.load_state_dict(torch.load(os.path.join(args.model_dir, args.model_file + ".pth")))
+    model.load_state_dict(safetensors.torch.load_file(os.path.join(args.model_dir, 
+                                                  os.path.join(args.model_file,
+                                                               model_config["best_checkpoint_path"],  
+                                                               "model.safetensors"))))
     model.to(device)
     model.eval()
 

@@ -8,7 +8,7 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 from torch.utils.data import DataLoader
-
+import safetensors
 from model import RelationClassifier
 from dataset import RelationDataset
 from tools.utils import make_mapping
@@ -71,10 +71,15 @@ def main(args):
     all_logits_dict = {}
 
     for i, mf in enumerate(model_files):
-        config_path = os.path.join(args.model_dir, mf + ".json")
-        model_path = os.path.join(args.model_dir, mf + ".pth")
+        config_path = os.path.join(args.model_dir, 
+                                  os.path.join(mf, 
+                                               "best_model_config.json"))
         with open(config_path, "r") as f:
             conf = json.load(f)
+        model_path = os.path.join(args.model_dir, 
+                                  os.path.join(mf, 
+                                               conf["best_checkpoint_path"],  
+                                               "model.safetensors"))
 
         num_labels = len(label2id)
 
@@ -97,7 +102,7 @@ def main(args):
                                    len(ds.tokenizer), 
                                    conf.get("use_span_pooling", False), 
                                    conf.get("use_attention_pooling", False))
-        model.load_state_dict(torch.load(model_path, map_location=device))
+        model.load_state_dict(safetensors.torch.load_file(model_path, map_location=device))
         model.eval().to(device)
 
         sample_ids = []
