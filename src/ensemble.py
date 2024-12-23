@@ -100,7 +100,7 @@ def main(args):
                                    len(ds.tokenizer), 
                                    conf.get("use_span_pooling", False), 
                                    conf.get("use_attention_pooling", False))
-        model.load_state_dict(safetensors.torch.load_file(model_path, map_location=device))
+        model.load_state_dict(safetensors.torch.load_file(model_path))
         model.eval().to(device)
 
         sample_ids = []
