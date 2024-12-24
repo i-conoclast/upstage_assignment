@@ -51,7 +51,7 @@ class RelationClassifier(nn.Module):
                 e2_start_idx: torch.Tensor = None, e2_end_idx: torch.Tensor = None,
                 labels=None, return_attentions: bool = False) -> torch.Tensor:
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, 
-                             return_attentions=return_attentions)
+                             output_attentions=return_attentions)
         hidden_states = outputs.last_hidden_state # [batch_size, seq_len, hidden_size]
 
         if self.use_span_pooling:
