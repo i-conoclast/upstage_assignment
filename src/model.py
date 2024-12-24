@@ -49,8 +49,9 @@ class RelationClassifier(nn.Module):
     def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, 
                 e1_start_idx: torch.Tensor = None, e1_end_idx: torch.Tensor = None, 
                 e2_start_idx: torch.Tensor = None, e2_end_idx: torch.Tensor = None,
-                labels=None) -> torch.Tensor:
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+                labels=None, return_attentions: bool = False) -> torch.Tensor:
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, 
+                             return_attentions=return_attentions)
         hidden_states = outputs.last_hidden_state # [batch_size, seq_len, hidden_size]
 
         if self.use_span_pooling:
@@ -101,4 +102,6 @@ class RelationClassifier(nn.Module):
             cls_output = self.dropout(cls_output)
             logits = self.classifier(cls_output) # [batch_size, num_labels]
         
+        if return_attentions:
+            return logits, outputs.attentions
         return logits
