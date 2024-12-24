@@ -48,7 +48,8 @@ class RelationClassifier(nn.Module):
 
     def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, 
                 e1_start_idx: torch.Tensor = None, e1_end_idx: torch.Tensor = None, 
-                e2_start_idx: torch.Tensor = None, e2_end_idx: torch.Tensor = None) -> torch.Tensor:
+                e2_start_idx: torch.Tensor = None, e2_end_idx: torch.Tensor = None,
+                labels=None) -> torch.Tensor:
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
         hidden_states = outputs.last_hidden_state # [batch_size, seq_len, hidden_size]
 
