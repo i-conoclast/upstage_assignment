@@ -33,6 +33,8 @@
 │  └─ test_data.csv
 ├─ models
 ├─ notebooks
+│  ├─ 1.EDA.ipynb
+│  ├─ 2.Result Analysis.ipynb
 │  └─ plots
 ├─ outputs
 ├─ src
@@ -43,13 +45,17 @@
 │  │  └─ utils.py
 │  ├─ config.py
 │  ├─ dataset.py
-│  ├─ inference.py
 │  ├─ loss.py
 │  ├─ metrics.py
 │  ├─ model.py
-│  └─ train.py
+│  ├─ train.py
+│  ├─ inference.py
+│  ├─ optimize.py
+│  └─ ensemble.py
 ├─ train.sh
 ├─ inference.sh
+├─ optimize.sh
+├─ ensemble.sh
 ├─ README.md
 ├─ .python_version
 ├─ poetry.lock
@@ -106,6 +112,10 @@
         numpy = "^2.2.0"
         matplotlib = "^3.10.0"
         seaborn = "^0.13.2"
+        optuna = "^4.1.0"
+        optuna-dashboard = "^0.17.0"
+        accelerate = "^1.2.1"
+        safetensors = "^0.4.5"
 
 
         [tool.poetry.group.dev.dependencies]
@@ -124,7 +134,7 @@
 
 3) Model Training
     ```
-    bash train.sh
+    sh train.sh
     ```
 
     OR
@@ -138,13 +148,14 @@
     --batch_size 16 \
     --num_epochs 10 \
     --learning_rate 3e-5 \
-    --use_cuda True \
-    --use_entity_markers True \
-    --use_entity_types True \
-    --use_span_pooling True \
+    --use_cuda \
+    --use_entity_markers \
+    --use_entity_types \
+    --use_span_pooling \
+    --use_attention_pooling \
     --dropout 0.1 \
-    --label2id_path utils/dict_label_to_num.pkl \
-    --id2label_path utils/dict_num_to_label.pkl \
+    --label2id_path tools/dict_label_to_num.pkl \
+    --id2label_path tools/dict_num_to_label.pkl \
     --model_dir models \
     --focal_loss \
     --label_smoothing 0.09 \
@@ -157,17 +168,18 @@
 
 4) Model Inference
     ```
-    bash inference.sh
+    sh inference.sh
     ```
 
     OR
 
     ```
     python src/inference.py \
-    --model_file models/{모델명}.pth \
+    --model_file {모델명} \
     --model_dir models \
     --output_dir outputs \
     --test_file data/test_data.csv \
+    --use_cuda 
     ```
 
     - 추론 결과는 csv 파일로 outputs/ 디렉토리에 저장
@@ -176,12 +188,50 @@
         - pred_label은 예측 레이블
         - probs는 예측 확률
 
+5) Model Optimization
+    ```
+    bash optimize.sh
+    ```
+
+    OR
+
+    ```
+    python src/optimize.py \
+    --train_file data/train_data.csv \
+    --valid_file data/valid_data.csv \
+    --model_name_or_path klue/roberta-large \
+    --model_dir models \
+    --study_name {study_name} \
+    --n_trials 10 \
+    --save_model \
+    --use_cuda 
+    ```
+
+6) Model Ensemble
+    ```
+    sh ensemble.sh
+    ```
+
+    OR
+
+    ```
+    python src/ensemble.py \
+    --model_dir models \
+    --model_files best_model_20241224_100000,best_model_20241224_100001 \
+    --ensemble_mode logit \
+    --output_dir outputs \
+    --test_file data/test_data.csv \
+    --use_cuda 
+    ```
+
 ## 4. Approach
 
 **Exploratory Data Analysis(EDA)**
-- 라벨 분포: no_relation 클래스가 우세하고, 다수의 희소 클래스가 존재함을 확인했습니다. 모델이 쉽게 no_relation으로만 예측하는 편향을 막기 위해 불균형을 해소하는 전략이 필요한 것을 확인했습니다.
+- 라벨 분포: `no_relation` 클래스가 우세하고, 다수의 희소 클래스가 존재함을 확인했습니다. 모델이 쉽게 `no_relation`으로만 예측하는 편향을 막기 위해 불균형을 해소하는 전략이 필요한 것을 확인했습니다.
 
-- 문장 길이 & 엔티티 타입: 평균 100자내외, 최장 400자 이상인 경우도 있어 max_length 128-160 정도가 적절하다고 판단했습니다. ORG-PER 등 특정 타입 조합에서 특정 관계(org:top_members/employees)가 집중되는 패턴이 드러나, 타입 정보를 활용하면 성능 향상을 기대할 수 있습니다. 이를 통해 엔티티 타입 정보를 직접적으로 모델에 알려주면 (E1-ORG, E2-PER 등) 관계 추출 성능이 향상될 것이라는 가정을 세웠습니다.
+- 문장 길이 & 엔티티 타입: 평균 100자내외, 최장 400자 이상인 경우도 있어 max_length 128-160 정도가 적절하다고 판단했습니다. ORG-PER 등 특정 타입 조합에서 특정 관계(org:top_members/employees)가 집중되는 패턴이 드러나, 타입 정보를 활용하면 성능 향상이 있을 것이라 예상했습니다. 이를 통해 엔티티 타입 정보를 직접적으로 모델에 알려주면 (E1-ORG, E2-PER 등) 관계 추출 성능이 향상될 것이라는 가정을 세웠습니다.
+
+- 엔티티 내부 토큰 분석: 특정 관계 라벨에서 엔티티 내부 토큰이 핵심 정보를 포함하는 것을 확인했습니다. 이를 통해 엔티티 스팬 풀링 방식을 적용하면 성능 향상이 있을 것이라 예상했습니다.
 
 **Model & Architecture**
 - Backbone Model
@@ -193,22 +243,22 @@
     - 모델 인코딩 시, 이 마커 정보를 별도의 스페셜 토큰으로 처리해 엔티티 주변 토큰에 Attention이 집중되도록 유도했습니다.
 
 - Span Pooling / Attention Pooling
-    - Span Pooling: 엔티티 구간(예: [E1] ~ [/E1]) 임베딩을 평균 또는 max pooling으로 모으고, 이를 최종 관계 분류에 활용했습니다.
+    - Span Pooling: 엔티티 구간(예: [E1] ~ [/E1]) 임베딩을 평균 pooling으로 모으고, 이를 최종 관계 분류에 활용했습니다.
     - Attention Pooling: 엔티티 스팬 내 토큰마다 learnable weight(Attention)를 적용해 중요한 토큰에 더 큰 가중치를 부여, 엔티티 정보를 더욱 정확히 추출했습니다.
 
 
 **Training/Evaluation Scheme**
 
 - Loss Function & 불균형 대응
-    - Focal Loss 사용: $\gamma=1.0$와 $\alpha=0.25$를 Grid Search로 최적화하여 희소 클래스에 대한 학습을 강화했습니다.
+    - Focal Loss 사용: $\gamma$와 $\alpha$를 탐색하며 희소 클래스에 대한 학습을 강화했습니다.
     - 기존 Cross Entropy 대비 희소 클래스 식별력이 향상됨을 확인했습니다.
     
 - Learning Rate Scheduler
-    - Linear와 Cosine 스케줄러 모두 실험하여, 초반 학습 안정성과 후반 수렴 특성을 비교했습니다.
+    - Linear, Cosine, Polynomial 스케줄러 모두 실험하여, 초반 학습 안정성과 후반 수렴 특성을 비교했습니다.
     - Cosine 스케줄러에서 최종적으로 더 나은 성능을 보였습니다.
     
 - 하이퍼파라미터 튜닝
-    - max_length: 128~160 범위 시험 후, 긴 문장의 정보 손실을 최소화하는 데 160 전후가 적절한 것을 확인하였습니다.
+    - max_length: [128, 160, 200] 값을 실험하였습니다.
 
 - 평가 지표
     - no_relation 제외 Micro-F1: 희소 클래스 인식력을 중시하는 지표입니다.    
@@ -227,15 +277,15 @@
 2.	Focal Loss([Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002))
     - Tsung-Yi Lin (2017)에서 제안된 기법으로, $\gamma$, $\alpha$ 조정 시 불균형 데이터에서의 희소 클래스 식별력이 개선된 것을 보여주고 있습니다.
 
-3.	Attention Pooling 및 Entity Marker 연구([An Improved Baseline for Sentence-level Relation Extraction](https://arxiv.org/abs/2102.01373))
+3.	Entity Marker 연구([An Improved Baseline for Sentence-level Relation Extraction](https://arxiv.org/abs/2102.01373))
     - 기존 NER, RE 연구에서 [E1], [E2] 마커를 삽입 시 모델이 엔티티 위치와 타입을 더욱 명확히 인지해 성능 향상을 보인다고 보고되었습니다.
-    - Attention Pooling은 많은 NLP 과제에서 문맥 중요 토큰에 가중치를 주는 방식으로 성능 개선에 기여합니다.
 
 **Future Work**
 
-1.	고급 데이터 증강
-    - Back-translation 외에도 paraphrasing, synonym replacement, style transfer 등을 결합해 데이터 다변화를 도모할 수 있습니다.
-    - 희소 클래스 샘플을 중심으로 증강하면 불균형 완화 효과가 기대할 수 있습니다.
+1.	데이터 증강
+    - EDA, AEDA, Honorific Transformation, Masking & Infilling 등 다양한 데이터 증강 기법을 결합해 데이터 다변화를 도모할 수 있습니다.
+    - 희소 클래스 샘플을 중심으로 증강하면 불균형 완화 효과를 기대할 수 있습니다.
 
-2.	더 큰 모델 및 앙상블
-    - KoELECTRA·KLUE-RoBERTa 등 모델 앙상블을 시도해 추가적인 성능 향상을 모색할 수 있습니다.
+2.	Span-based 모델 한국어 파인튜닝
+    - EDA 결과, 스팬 내부 단어가 중요한 것으로 확인되었습니다.
+    - 사전 학습 자체나 모델 구조 자체가 span-aware일 경우 Relation Extraction 성능이 향상될 것이라 예상했습니다.
