@@ -1,18 +1,27 @@
 
 ## 1. Summary
 
-본 레포지토리에서는 한국어 문장에서 두 엔티티 간 관계를 추출하는 태스크를 다루고 있습니다.  데이터 탐색(EDA) 결과, 특히 no_relation 클래스로 인해 심각한 불균형 문제가 발생한다는 점을 확인했습니다. 또한, 특정 엔티티 타입 조합(예: ORG-PER)에서 특정 관계가 집중적으로 발생한다는 패턴이 발견되었고, 일부 존재하는 긴 문장에 대한 정보 손실을 줄이지 않도록 max_length를 적절한 수준(128~160)으로 설정했습니다. 이러한 분석에 따라 엔티티 마커(타입 정보 포함 가능), Focal Loss(gamma=1.0, alpha=0.25로 Grid Search로 최적화), 그리고 linear/cosine LR 스케줄러 등을 적용해 모델 성능을 개선했습니다. 평가에서는 과제의 평가지표인 no_relation을 제외한 Micro-F1, AUPRC를 지표로 사용했습니다. 한편, 엔티티 스팬 풀링과 Attention 기반 풀링 등을 추가 적용해 엔티티 집중도를 높여 성능을 높이고자 했습니다.
+본 레포지토리에서는 한국어 문장에서 두 엔티티 간 관계를 추출하는 태스크를 다루고 있습니다.  데이터 탐색(EDA) 결과, 특히 no_relation 클래스로 인해 심각한 불균형 문제가 발생한다는 점을 확인했습니다. 또한, 특정 엔티티 타입 조합(예: ORG-PER)에서 특정 관계가 집중적으로 발생한다는 패턴이 발견되었고, 일부 존재하는 긴 문장에 대한 정보 손실을 줄이지 않도록 max_length를 적절한 수준(128~160)으로 설정했습니다. 이러한 분석에 따라 엔티티 마커(타입 정보 포함 가능), Focal Loss, 그리고 linear/cosine/polynomial LR 스케줄러 등을 적용해 모델 성능을 개선했습니다. 평가에서는 과제의 평가지표인 no_relation을 제외한 Micro-F1, AUPRC를 지표로 사용했습니다. 한편, 엔티티 스팬 풀링과 Attention 기반 풀링 등을 추가 적용해 엔티티 내부 토큰에의 집중도를 높여 성능을 높이고자 했습니다.
 
 ## 2. Experimental Results
 
+* 검증 데이터셋 기준
+| Model Setting                                           | Micro-F1 (no_relation excl.) | AUPRC  |
+|---------------------------------------------------------|------------------------------|--------|
+| (A) Model Only                                          | 0.5942                       | 0.4824 |
+| (B) Entity Marker                                       | 0.8288                       | 0.7757 |
+| (C) Entity Marker + Focal Loss                          | 0.8327                       | 0.7890 |
+| (D) Entity Marker + Focal Loss + Span Pooling(mean)     | 0.8505                       | 0.7972 |
+| (E) Entity Marker + Focal Loss + Span Pooling(attention)| 0.8513                       | 0.8050 |
+
 * 테스트 데이터 셋 평가 결과
 
-| Model Variant   | Loss Function           | Label Smoothing | LR Scheduler | Entity Marker (Type included) | Span Pooling | Micro-F1 (no_relation excl.) | AUPRC   |
-|-----------------|-------------------------|-----------------|-------------|--------------------------------|--------------|------------------------------|---------|
-| RoBERTa base    | Focal Loss             | 0.1             | Linear      | Yes (With Type)                | Yes          | 65.4346                      | 59.9928 |
-| RoBERTa large   | Focal Loss             | 0.1             | Linear      | Yes (With Type)                | Yes          | 67.3219                      | 66.0349 |
-| RoBERTa large   | Focal Loss (Optimized) | 0.09            | Linear      | Yes (With Type)                | Yes          | 68.7285                      | 68.9031 |
-| RoBERTa large   | Focal Loss (Optimized) | 0.09            | Cosine      | Yes (With Type)                | Yes          | 71.1004                      | 72.6258 |
+| Model Variant            | Loss Function            | Label Smoothing | LR Scheduler | Entity Marker (Type) | Span Pooling | Attention Pooling | Micro-F1 (no_relation excl.) | AUPRC   |
+|--------------------------|--------------------------|-----------------|-------------|----------------------|--------------|-------------------|------------------------------|---------|
+| RoBERTa base            | Focal Loss               | 0.1             | Linear      | Yes (With Type)      | Yes          | No                | 65.4346                       | 59.9928 |
+| RoBERTa large           | Focal Loss               | 0.1             | Linear      | Yes (With Type)      | Yes          | No                | 67.3219                       | 66.0349 |
+| RoBERTa large           | Focal Loss (Optimized)   | 0.09            | Linear      | Yes (With Type)      | Yes          | No                | 68.7285                       | 68.9031 |
+| RoBERTa large           | Focal Loss (Optimized)   | 0.09            | Cosine      | Yes (With Type)      | Yes          | No                | 71.1004                       | 72.6258 |
 
 ## 3. Instructions
 
