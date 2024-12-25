@@ -271,8 +271,7 @@
     - 기존 Cross Entropy 대비 희소 클래스 식별력이 향상됨을 확인했습니다.
     
 - Learning Rate Scheduler
-    - Linear, Cosine, Polynomial 스케줄러 모두 실험하여, 초반 학습 안정성과 후반 수렴 특성을 비교했습니다.
-    - Cosine 스케줄러에서 최종적으로 더 나은 성능을 보였습니다.
+    - Linear, Cosine, Polynomial 스케줄러 모두 실험하였습니다.
     
 - 하이퍼파라미터 튜닝
     - max_length: [128, 160, 200] 값을 실험하였습니다.
