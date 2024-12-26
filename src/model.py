@@ -7,7 +7,8 @@ class AttentionPooling(nn.Module):
         super().__init__()
         self.w = nn.Parameter(torch.randn(hidden_size))
     
-    def forward(self, span_hidden_states: torch.Tensor) -> torch.Tensor:
+    def forward(self, span_hidden_states: torch.Tensor,
+                return_weights: bool = False) -> torch.Tensor:
         # span_hidden_states: [span_length, hidden_size]
         # return: [hidden_size]
 
@@ -21,6 +22,8 @@ class AttentionPooling(nn.Module):
         # weighted sum of span_hidden_states
         # (span_length, ) x (span_length, hidden_size) -> sum after broadcasting
         pooled = torch.sum(attn_weights.unsqueeze(-1) * span_hidden_states, dim=0)
+        if return_weights:
+            return pooled, attn_weights
         return pooled
 
 class RelationClassifier(nn.Module):
@@ -49,9 +52,13 @@ class RelationClassifier(nn.Module):
     def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, 
                 e1_start_idx: torch.Tensor = None, e1_end_idx: torch.Tensor = None, 
                 e2_start_idx: torch.Tensor = None, e2_end_idx: torch.Tensor = None,
-                labels=None) -> torch.Tensor:
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+                labels=None, return_attentions: bool = False, return_weights: bool = False) -> torch.Tensor:
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, 
+                             output_attentions=return_attentions)
         hidden_states = outputs.last_hidden_state # [batch_size, seq_len, hidden_size]
+
+        e1_weights = []
+        e2_weights = []
 
         if self.use_span_pooling:
             # span pooling
@@ -66,10 +73,13 @@ class RelationClassifier(nn.Module):
                     if not self.use_attention_pooling:
                         span_vec = span_hs.mean(dim=0)
                     else:
-                        span_vec = self.e1_attention_pooling(span_hs)
+                        span_vec, attn_weights = self.e1_attention_pooling(span_hs, return_weights=True)
+                        e1_weights.append(attn_weights.cpu().detach())
                 else:
                     # fallback: CLS or avg but here use CLS
                     span_vec = hs[0]
+                    if self.use_attention_pooling:
+                        e1_weights.append(torch.tensor([]))
                 e1_pooled.append(span_vec)
             e1_pooled = torch.stack(e1_pooled, dim=0) # [batch_size, hidden_size]
 
@@ -84,10 +94,13 @@ class RelationClassifier(nn.Module):
                     if not self.use_attention_pooling:
                         span_vec = span_hs.mean(dim=0)
                     else:
-                        span_vec = self.e2_attention_pooling(span_hs)
+                        span_vec, attn_weights = self.e2_attention_pooling(span_hs, return_weights=True)
+                        e2_weights.append(attn_weights.cpu().detach())
                 else:
                     # fallback: CLS or avg but here use CLS
                     span_vec = hs[0]
+                    if self.use_attention_pooling:
+                        e2_weights.append(torch.tensor([]))
                 e2_pooled.append(span_vec)
             e2_pooled = torch.stack(e2_pooled, dim=0) # [batch_size, hidden_size]
 
@@ -101,4 +114,8 @@ class RelationClassifier(nn.Module):
             cls_output = self.dropout(cls_output)
             logits = self.classifier(cls_output) # [batch_size, num_labels]
         
+        if return_attentions:
+            return logits, outputs.attentions
+        if return_weights and self.use_attention_pooling and self.use_span_pooling:
+            return logits, e1_weights, e2_weights
         return logits
