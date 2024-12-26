@@ -22,6 +22,24 @@
 | (D) Entity Marker + Focal Loss + Span Pooling(mean)     | 0.8505                       | 0.7972 |
 | (E) Entity Marker + Focal Loss + Span Pooling(attention)| 0.8513                       | 0.8050 |
 
+* 검증 데이터셋 기준
+- 앙상블 대상 모델 (단일 모델)
+
+| Model                                | Optimized Parameters                                                                                                                                                                                                                                                                                                                                   | Micro-F1 (no_relation excl.) | AUPRC  |
+|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|--------|
+| (A) deberta-korean-base (optimized)  | batch_size : 8 <br> num_epochs : 8 <br> learning_rate : 2.9361705292170236e-05 <br> max_length : 128 <br> dropout : 0.2 <br> scheduler : linear <br> focal_loss : true <br> label_smoothing : 0.05 <br> alpha : 0.25 <br> gamma : 2.0 <br> span_pooling : false <br> entity_markers : true <br> entity_types : false                             | 0.8191                         | 0.7431 |
+| (B) koelectra-v3-discriminator (optimized) | batch_size : 16 <br> num_epochs : 6 <br> learning_rate : 2.8262768586139738e-05 <br> max_length : 128 <br> dropout : 0.0 <br> scheduler : linear <br> focal_loss : false <br> label_smoothing : 0.2 <br> span_pooling : false <br> entity_markers : true <br> entity_types : true                                                              | 0.8389                         | 0.7648 |
+| (C) roberta-large (optimized)        | batch_size : 32 <br> num_epochs : 3 <br> learning_rate : 2.80026895611933e-05 <br> max_length : 200 <br> dropout : 0.0 <br> scheduler : linear <br> focal_loss : false <br> label_smoothing : 0.15000000000000002 <br> span_pooling : true <br> attention_pooling : false <br> entity_markers : true <br> entity_types : false | 0.8593                         | 0.8235 |
+
+- 앙상블 모델
+
+| Model                                                                              | Micro-F1 (no_relation excl.) | AUPRC   |
+|------------------------------------------------------------------------------------|------------------------------|---------|
+| (D) (A) + (B) + (C) soft voting                                                    | 69.5315                      | 73.0182 |
+| (E) (A) + (B) + (C) logit averaging                                                | 69.4768                      | 73.4883 |
+| (F) (A) + (B) + (C) weighted logit averaging ( (A) : 0.1, (B) : 0.2, (C): 0.7 )     | 71.7391                      | 75.7794 |
+
+
 * 테스트 데이터 셋 평가 결과
 
 | Model Variant            | Loss Function            | Label Smoothing | LR Scheduler | Entity Marker (Type) | Span Pooling | Attention Pooling | Micro-F1 (no_relation excl.) | AUPRC   |
@@ -289,7 +307,6 @@
 
 1.	KLUE Benchmark 및 RE 태스크([KLUE-RE](https://github.com/KLUE-benchmark/KLUE/tree/main))
     - 한국어 전용 벤치마크로, KLUE-RE에서 다양한 baseline 및 SOTA 모델이 제시되었습니다.
-    - 문헌에서 엔티티 마커, 타입 정보 활용 시 성능이 크게 향상된다고 보고되었습니다.
 
 2.	Focal Loss([Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002))
     - Tsung-Yi Lin (2017)에서 제안된 기법으로, $\gamma$, $\alpha$ 조정 시 불균형 데이터에서의 희소 클래스 식별력이 개선된 것을 보여주고 있습니다.
@@ -305,4 +322,4 @@
 
 2.	Span-based 모델 한국어 파인튜닝
     - EDA 결과, 스팬 내부 단어가 중요한 것으로 확인되었습니다.
-    - 사전 학습 자체나 모델 구조 자체가 span-aware일 경우 Relation Extraction 성능이 향상될 것이라 예상했습니다.
+    - 사전 학습 자체나 모델 구조 자체가 span-aware일 경우 Relation Extraction 성능이 향상될 것이라 예상합니다.
