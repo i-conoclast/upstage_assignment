@@ -323,3 +323,4 @@
 2.	Span-based 모델 한국어 파인튜닝
     - EDA 결과, 스팬 내부 단어가 중요한 것으로 확인되었습니다.
     - 사전 학습 자체나 모델 구조 자체가 span-aware일 경우 Relation Extraction 성능이 향상될 것이라 예상합니다.
+
